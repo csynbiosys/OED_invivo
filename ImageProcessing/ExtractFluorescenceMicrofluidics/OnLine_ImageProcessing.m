@@ -96,7 +96,7 @@ mh = msgbox(message, 'Waiting...', 'warn');     %create msgbox
 th = findall(mh, 'Type', 'Text');                   %get handle to text within msgbox
 th.FontSize = 14;   
 uiwait(mh);
-disp('sddd')
+
                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %      *      START EXPERIMENT      *      %
                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
