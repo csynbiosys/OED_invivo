@@ -8,8 +8,6 @@
 % and Off-line postprocessing (which in the future will be included on-line
 
 %% Include necessary paths for the tasks
-subs = genpath('DataOnLine');
-addpath(subs);
 addpath('FunctionsOnLine');
 addpath('Temp_Masks');
 addpath('Temp_Track');
@@ -55,6 +53,9 @@ INP(1,:)=inp; INP(2,:)=timeIn;
 disp('Select the directory where the images are going to be saved')
 pDIC = uigetdir;
 
+subs = genpath(pDIC);
+addpath(subs);
+
 % Type identifier to be used for files
 ident=input(' Enter desired identifier for files :\n', 's');
 % Select location of the RSA file for the instance
@@ -96,6 +97,13 @@ mh = msgbox(message, 'Waiting...', 'warn');     %create msgbox
 th = findall(mh, 'Type', 'Text');                   %get handle to text within msgbox
 th.FontSize = 14;   
 uiwait(mh);
+
+disp('                         ************************************************');
+disp('                        *      **      EXPERIMENT STARTED!      **      *');
+disp('                         ************************************************');
+disp('                                  ******************************         ');
+disp('                                            **********                   ');
+disp('                                                **                       ');
 
                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %      *      START EXPERIMENT      *      %
@@ -151,6 +159,7 @@ while length(Segs)~=maxidT
     % Get number of frames for channel
     maxidT=length(Files2);
 end
+
 disp('Tracking Finished!')
 
 

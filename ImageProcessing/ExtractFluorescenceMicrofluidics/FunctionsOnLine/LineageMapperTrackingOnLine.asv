@@ -22,7 +22,7 @@ fprintf(fil, '\n');
 fprintf(fil, strcat('run("Lineage Mapper", ',strcat('"inputdirectory=',strrep(pwd,'\','\\\\'),'\\\\','Temp_Masks'," filenameprefix=img_{iii}.tif outputdirectory=",strrep(pwd,'\','\\\\'),'\\\\','Temp_Track'," outputprefix=trk- weightcelloverlap=0.7 weightcentroidsdistance=0.9 weightcellsize=0.5 maxcentroidsdistance=40.0 mincelllife=6 celldeathdeltacentroid=0.0 celldensityaffectsci=true bordercellaffectsci=true daughtersizesimilarity=0.0 mindivisionoverlap=0.0 daughteraspectratiosimilarity=0.4 mothercircularityindex=0.2 numframestocheckcircularity=6 enablecelldivision=false mincellarea=6 minfusionoverlap=0.01 enablecellfusion=false"),'")'));
 
 dir1 = strrep(pwd,'\','/');
-fprintf(fil, '\n');
+
 fprintf(fil, ['dir1 = "',dir1,'/Temp_Masks/";']);
 fprintf(fil, '\n');
 fprintf(fil, ['dir2 = "',dir1,'/Temp_Track/";']);
@@ -32,7 +32,6 @@ fprintf(fil, '\n');
 fprintf(fil, 'list2 = getFileList(dir2);');
 fprintf(fil, '\n');
 fprintf(fil, 'while(list2.length <= list1.length){');
-fprintf(fil, '\n');
 fprintf(fil, ['    dir1 = "',dir1,'/Temp_Masks/";']);
 fprintf(fil, '\n');
 fprintf(fil, ['    dir2 = "',dir1,'/Temp_Track/";']);
@@ -60,9 +59,10 @@ fprintf(fil, 'import os');
 fprintf(fil, '\n');
 % fprintf(fil, strcat('run("Lineage Mapper", ',strcat('"inputdirectory=',strrep(pwd,'\','\\\\'),'\\\\',strrep(direct,'\','\\\\'),"\\\\Segmentation\\\\Components filenameprefix=img_{iii}.tif outputdirectory=",strrep(pwd,'\','\\\\'),'\\\\',strrep(direct,'\','\\\\'),"\\\\Tracking outputprefix=trk- weightcelloverlap=0.7 weightcentroidsdistance=0.8 weightcellsize=0.6 maxcentroidsdistance=150.0 mincelllife=6 celldeathdeltacentroid=0.0 celldensityaffectsci=true bordercellaffectsci=true daughtersizesimilarity=0.0 mindivisionoverlap=0.0 daughteraspectratiosimilarity=0.4 mothercircularityindex=0.2 numframestocheckcircularity=6 enablecelldivision=false mincellarea=4 minfusionoverlap=0.01 enablecellfusion=false"),'")'));
 
-% dir2 = strrep([direct,'\Segmentation'],'\2','\\2');
-dir2 = strrep(direct,'\','\\');
+dir2 = strrep([direct,'\Segmentation'],'\2','\\2');
+dir2 = strrep(dir2,'\','\\');
 
+[dir2,'\\Tracking\\',ident,'-MacroTracking.ijm"]']
 fprintf(fil, strcat('cmd = [r"D:\\Installers\\fiji-win64\\Fiji.app\\ImageJ-win64.exe", "-macro", r"',dir2,'\\Tracking\\',ident,'-MacroTracking.ijm"]'));
 fprintf(fil, '\n');
 fprintf(fil, strcat('p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)'));
