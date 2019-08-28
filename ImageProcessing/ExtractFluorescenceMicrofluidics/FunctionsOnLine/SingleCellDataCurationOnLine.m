@@ -14,7 +14,7 @@
 % --------> sct6: Matlab structure containing the single cell citrine levels
 % by cell after the correcton of the traces
 
-function [dat,sct6] = SingleCellDataCurationOnLine(pDIC, ident)
+function [dat,sct6,sct62] = SingleCellDataCurationOnLine(pDIC, ident)
 
 Folder=[pDIC, '\CutDIC\'];
 filePattern = fullfile(Folder,'exp_000*_DIC_001.png');
@@ -87,11 +87,14 @@ larf = unique(larf);
 
 %%%%%%%%%%%%%%%%% Extract cells that touch the edge
 % Try GPU: https://uk.mathworks.com/matlabcentral/answers/36235-parfor-on-gpu
-if gpuDeviceCount~=0
-    edgeind = gpuArray();
-else
-    edgeind = [];
-end
+% if gpuDeviceCount~=0
+%     edgeind = gpuArray();
+% else
+%     edgeind = [];
+% end
+
+edgeind = [];
+
 sctEDGE = cell(1,maxid/2);
 r=2:2:maxid;
 parfor ind=1:maxid/2
@@ -102,6 +105,7 @@ parfor ind=1:maxid/2
     sctEDGE{ind} = NaN(1,max(n));
     
     [a,b] = size(tempim2);
+    a=993;
     z = zeros(a,b);
     np = 0;
     
@@ -185,7 +189,7 @@ for i=1:length(sctNENB)
     iv = sctNENB{i}(1,:);
     
     for j=20:nf
-        if j-1>1 && j+1<180 && abs(iv(j)-iv(j+1))>15 && ~isnan(iv(j-1))
+        if j-1>1 && j+1<maxid/2 && abs(iv(j)-iv(j+1))>15 && ~isnan(iv(j-1))
             iv(j+1:end)=NaN;
             ls = [ls, i];
         end
@@ -195,7 +199,7 @@ end
 
 % Apply All Filters
 f = 0;
-sct6 = cell(1,maxid/2);
+sct6 = cell(1,max(n));
 % Index for low expression cells
 lec = [];
 for i=1:max(n)
@@ -212,6 +216,10 @@ for i=1:max(n)
 end
 
 save([pDIC, '\Tracking\',ident,'_FinalCuratedTraces.mat'], 'sct6');
+
+sct62 = sct6(~cellfun('isempty',sct6));
+
+save([pDIC, '\Tracking\',ident,'_FinalCuratedTracesNoEmpty.mat'], 'sct62');
 
 end
 

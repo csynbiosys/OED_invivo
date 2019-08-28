@@ -167,7 +167,9 @@ for i=1:maxidM
         fclose(fil);
         
         % Run Python script
-        system(['python ',pDIC,'\Segmentation\Components\',ident,'-PythonAnotateImage.py']);
+        addpath 'D:\David\python'
+        addpath 'C:\Program Files\MATLAB\R2018b\bin\win64'
+        system(['python "',pDIC,'\Segmentation\Components\',ident,'-PythonAnotateImage.py"']);
     end
 end
 

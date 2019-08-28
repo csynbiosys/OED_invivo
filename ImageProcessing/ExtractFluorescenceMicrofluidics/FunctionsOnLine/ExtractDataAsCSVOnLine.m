@@ -12,7 +12,7 @@
 function [] = ExtractDataAsCSVOnLine(direct, ident)
 
 % Load data
-load([direct, '\Tracking\',ident,'_FinalCuratedTraces.mat'], 'sct6');
+load([pDIC, '\Tracking\',ident,'_FinalCuratedTracesNoEmpty.mat'], 'sct62');
 
 %% Single-cell data
 
@@ -35,23 +35,28 @@ IPTGpre = zeros(1,length(time));
 
 % Generate matrix with all data to be converted into CSV
 
-finMat = zeros(length(time),length(sct6)+3);
+finMat = zeros(length(time),length(sct62)+3);
 
 finMat(:,1) = IPTGpre;
 finMat(:,2) = IPTG;
 finMat(:,3) = time;
 
 for i=4:length(finMat)
-    finMat(:,i) =sct6{(i-3)};
+    if length(finMat(:,i))~= length(sct62{(i-3)})
+        disp('WARNING: it seems that there is a different amount of sampling points than the expected one!')
+        return
+    end
+    
+    finMat(:,i) =sct62{(i-3)};
 end
 
-indcell = strings(1,length(sct6));
+indcell = strings(1,length(sct62));
 
 for i=1:length(indcell)
     indcell(i) = ['Cell_',int2str(i)];
 end
 
-header = strings(1,length(sct6)+3);
+header = strings(1,length(sct62)+3);
 header(1) = 'IPTGpre';
 header(2) = 'IPTG';
 header(3) = 'time(min)';
@@ -74,8 +79,8 @@ dlmwrite([direct,'\',ident,'-SC_Data.csv'],finMat,'-append');
 
 % Compute mean and standard deviation of the trajectories
 fina = [];
-for i=1:length(sct6)
-    fina = [fina;sct6{i}];
+for i=1:length(sct62)
+    fina = [fina;sct62{i}];
 end
 
 mv = mean(fina,'omitnan');

@@ -63,14 +63,14 @@ fprintf(fil, '\n');
 % dir2 = strrep([direct,'\Segmentation'],'\2','\\2');
 dir2 = strrep(direct,'\','\\');
 
-fprintf(fil, strcat('cmd = [r"D:\\Installers\\fiji-win64\\Fiji.app\\ImageJ-win64.exe", "-macro", r"',dir2,'\\Tracking\\',ident,'-MacroTracking.ijm"]'));
+fprintf(fil, strcat('cmd = [r"D:\\David\\fiji-win64\\Fiji.app\\ImageJ-win64.exe", "-macro", r"',dir2,'\\Tracking\\',ident,'-MacroTracking.ijm"]'));
 fprintf(fil, '\n');
 fprintf(fil, strcat('p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)'));
 
 fprintf(fil, '\n');
 fclose(fil);
 
-system(['python ',direct,'\Tracking\',ident,'-MacroTracking.py']);
+system(['python "',direct,'\Tracking\',ident,'-MacroTracking.py"']);
 
 
 % addpath 'D:\Installers\fiji-win64\Fiji.app\scripts'

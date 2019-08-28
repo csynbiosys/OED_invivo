@@ -48,20 +48,20 @@ load([pDIC,'\Segmentation\TemporaryBackground.mat']);
 medianBGCitrine=tBKGround;
 
 % Compute Background intensity
-r = 2;
-for ind=1:maxid/2
-    tempim2=double(CCs{ind});
-    
-    if (isnan(whenFull))
-        medianBGCitrine(ind)=median(tempim2(logical(BGMask{r})));
-        if (mean(double(logical(BGMask{r}(:))))<0.25)
-            meanBGCitrine=mean(medianBGCitrine,'omitnan');
-            whenFull=ind;
-            break;
-        end
-    end
-    r=r+2;
-end
+% r = 2;
+% for ind=1:maxid/2
+%     tempim2=double(CCs{ind});
+%     
+%     if (isnan(whenFull))
+%         medianBGCitrine(ind)=median(tempim2(logical(BGMask{r})));
+%         if (mean(double(logical(BGMask{r}(:))))<0.25)
+%             meanBGCitrine=mean(medianBGCitrine,'omitnan');
+%             whenFull=ind;
+%             break;
+%         end
+%     end
+%     r=r+2;
+% end
 
 
 % Singel Cell Data per frame
@@ -81,7 +81,7 @@ parfor ind=1:maxid/2
     np = 0;
     for i=1:a
         for j=1:b
-            if BGMask{r(ind)}(i,j)==1
+            if BGMask{r(ind)}(i,j)~=0
                 np=np+1;
             end
         end

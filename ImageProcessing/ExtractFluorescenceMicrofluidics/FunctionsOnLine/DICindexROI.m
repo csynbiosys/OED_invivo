@@ -60,7 +60,7 @@ function [cutcor] = DICindexROI(dii)
 
 
         % ROI coordenates/indexes
-        cutcor = [roiPosition(2), roiPosition(2)+(roiPosition(4)-1), roiPosition(1), roiPosition(1)+(roiPosition(3)-1)];
+        cutcor = [roiPosition(2)+1, roiPosition(2)+(roiPosition(4)-1), roiPosition(1)+1, roiPosition(1)+(roiPosition(3)-1)];
         save([dii, '\ROIindex.mat'],'cutcor')
     end
 

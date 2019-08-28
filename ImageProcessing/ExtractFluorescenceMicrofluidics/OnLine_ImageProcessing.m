@@ -59,9 +59,9 @@ addpath(subs);
 % Type identifier to be used for files
 ident=input(' Enter desired identifier for files :\n', 's');
 % Select location of the RSA file for the instance
-disp('Select the location of the RSA key file')
-[file2,path2] = uigetfile('*.pem');
-RSA = [path2,file2];
+% disp('Select the location of the RSA key file')
+% [file2,path2] = uigetfile('*.pem');
+RSA = 'D:\David\OED_invivo-master\ImageProcessing\ExtractFluorescenceMicrofluidics\lin002Test.pem';
 
 %%%%%%%%%%%%%%%%%%%%% DEFINE VARIABLES %%%%%%%%%%%%%%%%%%%%%
 IP = '129.215.193.61'; % Floating IP of the instance
@@ -71,7 +71,7 @@ Cmod = 'CChNewFin3'; % Name of the weights file
 WriteMacroSegmentation(pDIC,ident,IP,Cmod,RSA,cutcor); % Write macro ImageJ script for segmentation
 
 % Add ImageJ to the path
-addpath 'D:\Installers\fiji-win64\Fiji.app\scripts'
+addpath 'D:\David\fiji-win64\Fiji.app\scripts'
 ImageJ;
 
 % Structures that will contain the temporary results for
@@ -85,7 +85,7 @@ save([pDIC,'\Segmentation\TemporaryBackgroundShort.mat'],'tBKGroundS');
 
 
 t = timer;
-t.Period = 60;%DicFreq*60; % Time delay in seconds
+t.Period = 30;%DicFreq*60; % Time delay in seconds
 t.TasksToExecute = 1800;%(maxt+150)/(DicFreq*60); % Number of times that the function will be executed
 t.ExecutionMode = 'fixedRate';
 % t.TimerFcn = {@TestFunction,'Working'};
@@ -109,7 +109,7 @@ disp('                                                **                       '
                 %      *      START EXPERIMENT      *      %
                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% pause(30)% Wait 30 seconds for images to be taken
+% pause(300)% Wait 30 seconds for images to be taken
 start(t)
 wait(t)
 stop(t)
@@ -174,14 +174,13 @@ disp('Masks moved')
 
 
 % Fluorescence data extraction
-pat3= 'DIC_Frame*.png';
 
 disp('Extracting Single-Cell fluorescence ...')
 [sct,sct2,scts] = SingleCellDataOnLine(pDIC, ident);
 disp('Finished!')
 
 disp('Curating Traces ...')
-[dat,sct6] = SingleCellDataCurationOnLine(pDIC, ident);
+[dat,sct6,sct62] = SingleCellDataCurationOnLine(pDIC, ident);
 disp('Finished!')
 
 
@@ -193,6 +192,7 @@ for i=1:length(sct6)
 end
 
 t = 1:5:(length(dat(:,1))*5);
+figure
 hold on
 yyaxis left
 shadedErrorBar(t, dat(:,1)', dat(:,2)','lineprops', '-r','transparent', 0)
@@ -201,14 +201,15 @@ shadedErrorBar(t, mean(fina,'omitnan'), std(fina, 'omitnan'),'lineprops', '-g','
 xlabel('time(min)')
 ylabel('Fluorescence (AU)')
 title(['All Cells (',num2str(length(sct2)),' traces) VS Final Filter (',num2str(length(sct6)),' traces)'])
-legend('All Cells', 'Filtered')
 
 yyaxis right
 stairs(INP(2,:), INP(1,:), 'b') % Input design
 ylabel('IPTG(uM)')
 
-hold off
+legend('All Cells', 'Filtered', 'Input')
 
+hold off
+savefig([pDIC, '\',ident,'_FluorescencePlot.fig']);
 
 % Make a CSV file containing the experimental data
 swt = timeIn(1:end-1)';
