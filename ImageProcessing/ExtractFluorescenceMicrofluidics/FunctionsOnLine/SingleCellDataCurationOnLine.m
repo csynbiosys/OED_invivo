@@ -22,6 +22,13 @@ Files = dir(filePattern);
 % Get number of frames for channel
 maxid=length(Files);
 
+filePattern1 = fullfile(pDIC, 'exp*DIC_001.png');
+filePattern2 = fullfile(pDIC, 'exp*mCitrineTeal_001.png');
+Files1 = dir(filePattern1);
+Files2 = dir(filePattern2);
+maxidD=length(Files1);
+maxidC=length(Files2);
+
 load([pDIC, '\Tracking\',ident,'_SingleCellTrackPerFrame.mat'], 'sct');
 load([pDIC, '\Tracking\',ident,'_SingleCellTrackPerCell.mat'], 'sct2');
 load([pDIC, '\Tracking\',ident,'_SingleCellTrackSize.mat'], 'scts');
@@ -29,10 +36,10 @@ load([pDIC,'\',ident,'-CutImages.mat'], 'CCs');
 load([pDIC, '\Tracking\',ident,'_TrakedMasks2.mat'], 'trki');
 n=cellfun(@(seg) max(seg(:)),trki);
 % Extract mean and standard deviation of the whole dataset
-nf = maxid/2;
-dat = zeros(maxid/2,2);
+nf = maxidC;
+dat = zeros(maxidC,2);
 
-for i=1:maxid/2
+for i=1:maxiC
     dat(i,1)=mean(sct{i}(1,:), 'omitnan');
     dat(i,2)=std(sct{i}(1,:), 'omitnan');
 end
@@ -42,22 +49,22 @@ save([pDIC, '\Tracking\',ident,'_SingleCellData.mat'], 'dat');
 %%%%%%%%%%%%%% All cells - bright stars
 % Get single vector with all sizes
 allcs = [];
-for i=1:maxid/2
+for i=1:maxidC
     allcs = [allcs, scts{i}(~isnan(scts{i}))];
 end
 % Threshold size
 ths = mean(allcs)+3*(std(allcs));
 % Get size per cell
 scts2 = {};
-for i=1:maxid/2
+for i=1:maxidC
     for j=1:max(n)
         scts2{j}(:,i) = scts{i}(:,j);
     end
 end
 % Get index of cells that at the end of the experiment are too large (3sd from the mean)
 lar = [];
-for i=1:length(scts{maxid/2})
-    if scts{maxid/2}(i)>ths
+for i=1:length(scts{maxidC})
+    if scts{maxidC}(i)>ths
         lar = [lar, i];
     end
 end
@@ -66,7 +73,7 @@ end
 %%%%% Distribution based on fluorescence
 % Get single vector with all fluorescence
 allfs = [];
-for i=1:maxid/2
+for i=1:maxidC
     itm = sct{i}(1,:);
     allfs = [allfs, itm(~isnan(itm))];
 end
@@ -74,7 +81,7 @@ end
 thf = mean(allfs)+3*(std(allfs));
 % Get index of cells that at some point of the experiment are too bright (3sd from the mean)
 larf = [];
-for j=1:maxid/2
+for j=1:maxidC
     for i=1:length(sct{j})
         if sct{j}(1,i)>thf
 %             sct{j}(1,i)
@@ -95,9 +102,18 @@ larf = unique(larf);
 
 edgeind = [];
 
-sctEDGE = cell(1,maxid/2);
-r=2:2:maxid;
-parfor ind=1:maxid/2
+sctEDGE = cell(1,maxidC);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
+
+if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
+    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
+else
+    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
+end
+
+% r=2:2:maxid;
+parfor ind=1:maxidC
     tempim2=double(CCs{ind});
     disp(num2str(ind))
     temp1=unique(trki{r(ind)});
@@ -105,8 +121,6 @@ parfor ind=1:maxid/2
     sctEDGE{ind} = NaN(1,max(n));
     
     [a,b] = size(tempim2);
-    a=993;
-    z = zeros(a,b);
     np = 0;
     
     for h=1:length(temp1)
@@ -124,7 +138,7 @@ end
 
 edgeind = unique(edgeind);
 sctEDGE2 = {};
-for i=1:maxid/2
+for i=1:maxidC
     for j=1:max(n)
         sctEDGE2{j}(:,i) = sctEDGE{i}(:,j);
     end
@@ -136,8 +150,8 @@ sctNoEdge = cell(1,length(sct2));
 for i=1:length(sct2)
     iv = sct2{i}(1,:);
     tv = sctEDGE2{i};
-    for j=1:maxid/2
-        if j+1<maxid/2 && tv(j)~=tv(j+1) && ~isnan(tv(j))
+    for j=1:maxidC
+        if j+1<maxidC && tv(j)~=tv(j+1) && ~isnan(tv(j))
             iv(j:end)=NaN;
         end
     end
@@ -149,9 +163,9 @@ sctNoNew = cell(1,length(sct2));
 for i=1:length(sct2)
     iv = sct2{i}(1,:);
     for j=1:nf
-        if j-1>1 && j+1<maxid/2 && abs(iv(j)-iv(j+1))>10 && isnan(iv(j-1))
+        if j-1>1 && j+1<maxidC && abs(iv(j)-iv(j+1))>10 && isnan(iv(j-1))
             iv(j)=NaN;
-        elseif j-1>1 && j+3<maxid/2 && abs(iv(j)-iv(j+3))>10 && isnan(iv(j-1))
+        elseif j-1>1 && j+3<maxidC && abs(iv(j)-iv(j+3))>10 && isnan(iv(j-1))
             iv(j)=NaN;iv(j+1)=NaN;iv(j+2)=NaN;
         end
     end
@@ -172,9 +186,9 @@ for i=1:length(sct2)
         end
     end
     for j=20:nf
-        if j-1>1 && j+1<maxid/2 && abs(iv(j)-iv(j+1))>5 && isnan(iv(j-1))
+        if j-1>1 && j+1<maxidC && abs(iv(j)-iv(j+1))>5 && isnan(iv(j-1))
             iv(j)=NaN;
-        elseif j-1>20 && j+4<maxid/2 && abs(iv(j)-iv(j+4))>5 && isnan(iv(j-1))
+        elseif j-1>20 && j+4<maxidC && abs(iv(j)-iv(j+4))>5 && isnan(iv(j-1))
             iv(j)=NaN;iv(j+1)=NaN;iv(j+2)=NaN;
         end
     end
@@ -189,7 +203,7 @@ for i=1:length(sctNENB)
     iv = sctNENB{i}(1,:);
     
     for j=20:nf
-        if j-1>1 && j+1<maxid/2 && abs(iv(j)-iv(j+1))>15 && ~isnan(iv(j-1))
+        if j-1>1 && j+1<maxidC && abs(iv(j)-iv(j+1))>15 && ~isnan(iv(j-1))
             iv(j+1:end)=NaN;
             ls = [ls, i];
         end
@@ -204,7 +218,7 @@ sct6 = cell(1,max(n));
 lec = [];
 for i=1:max(n)
     A = sctNENBNBu{i}(1,:);
-    if length(A(~isnan(A)))>round((maxid/2)*0.2) && ~ismember(i,larf) && ~ismember(i,lar)
+    if length(A(~isnan(A)))>round((maxidC)*0.2) && ~ismember(i,larf) && ~ismember(i,lar)
         f = f+1;
         sct6{f} = sctNENBNBu{i};
         % Check for cells with really low fluorescence

@@ -180,7 +180,14 @@ load([pDIC,'\Segmentation\TemporaryFluorescence.mat'],'tfluo');
 load([pDIC,'\Segmentation\TemporaryBackground.mat'],'tBKGround');
 load([pDIC,'\Segmentation\TemporaryBackgroundShort.mat'],'tBKGroundS');
 
-r = 2:2:maxidD;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
+if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
+    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
+else
+    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
+end
+
+% r = 2:2:maxidD;
 for i=1:maxidC % Cut DIC images
     if isnan(tfluo(1,i))
         num = num2str(r(i),'%.3u');

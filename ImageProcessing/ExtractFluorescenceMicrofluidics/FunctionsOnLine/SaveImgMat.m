@@ -37,7 +37,14 @@ parfor i=1:maxidD % DIC images
     CDs{i} = imread([pDIC,'\CutDIC\exp_000',num,'_DIC_001.png']);
 end
 
-r = 2:2:maxidD;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
+if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
+    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
+else
+    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
+end
+
+% r = 2:2:maxidD;
 parfor i=1:maxidC % Citrine Images
     num = num2str(r(i),'%.3u');
     CCs{i} = imread([pDIC,'\CutCitrine\exp_000',num,'_mCitrineTeal_001.png']);

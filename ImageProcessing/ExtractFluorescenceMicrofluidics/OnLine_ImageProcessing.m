@@ -88,9 +88,7 @@ t = timer;
 t.Period = 30;%DicFreq*60; % Time delay in seconds
 t.TasksToExecute = 1800;%(maxt+150)/(DicFreq*60); % Number of times that the function will be executed
 t.ExecutionMode = 'fixedRate';
-% t.TimerFcn = {@TestFunction,'Working'};
 t.TimerFcn = {@ImProcSegm,cutcor,pDIC,ident,INP};
-% t.TimerFcn = @(src, event) run('TestFunction');
 
 message = sprintf('Ready to start??');
 mh = msgbox(message, 'Waiting...', 'warn');     %create msgbox

@@ -24,9 +24,17 @@ Files = dir(filePattern);
 % Get number of frames for channel
 maxid=length(Files);
 
+% Get names of current images 
+filePattern1 = fullfile(pDIC, 'exp*DIC_001.png');
+filePattern2 = fullfile(pDIC, 'exp*mCitrineTeal_001.png');
+Files1 = dir(filePattern1);
+Files2 = dir(filePattern2);
+maxidD=length(Files1);
+maxidC=length(Files2);
+
 % Load tracking results
-trki = cell(1,maxid);
-for i=1:maxid
+trki = cell(1,maxidD);
+for i=1:maxidD
     strind=num2str(i,'%.3u');
     x = imread([pDIC, '\Tracking\trk-img_',strind,'.tif']);
     trki{i}=x;
@@ -38,7 +46,7 @@ save([pDIC, '\Tracking\',ident,'_TrakedMasks2.mat'], 'trki')
 n=cellfun(@(seg) max(seg(:)),trki);
 
 % Empty cells with the results
-medianBGCitrine=nan(maxid/2,1);
+medianBGCitrine=nan(maxidC,1);
 whenFull=nan;
 
 % Load Cut Citrine images and Background images
@@ -65,9 +73,18 @@ medianBGCitrine=tBKGround;
 
 
 % Singel Cell Data per frame
-sct = cell(1,maxid/2);
-r=2:2:maxid;
-parfor ind=1:maxid/2
+sct = cell(1,maxidC);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
+
+if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
+    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
+else
+    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
+end
+
+% r=2:2:maxid;
+parfor ind=1:maxidC
     strind=num2str(ind,'%.3u');
     fprintf(['Processing frame ',strind,'...\n']);
     tempim2=double(CCs{ind});
@@ -106,7 +123,7 @@ save([pDIC, '\Tracking\',ident,'_SingleCellTrackPerFrame.mat'], 'sct')
 
 sct2 = cell(1,max(n));
 
-for i=1:maxid/2
+for i=1:maxidC
     for j=1:max(n)
         sct2{j}(:,i) = sct{i}(:,j);
     end
@@ -116,7 +133,7 @@ save([pDIC, '\Tracking\',ident,'_SingleCellTrackPerCell.mat'], 'sct2')
 
 % Singel Cell Size
 scts = {};
-parfor ind=1:maxid/2
+parfor ind=1:maxidC
     strind=num2str(ind,'%.3u');
     tempim2=double(CCs{ind});
     
