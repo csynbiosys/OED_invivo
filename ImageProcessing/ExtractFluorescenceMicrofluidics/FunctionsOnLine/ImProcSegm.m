@@ -83,6 +83,30 @@ end
 %% Segmentation
 
 % Run UNet segmentation Macro code
+
+%%%%%%%%%%%%%%%%%%%%%%%%%% Exceptions to check if UNet has worked and if
+%%%%%%%%%%%%%%%%%%%%%%%%%% not run Cell Star
+% tic
+% while 1
+%     IJ=ij.IJ();
+%     macro_path = [pDIC,'\Segmentation'];
+%     IJ.runMacroFile(java.lang.String(fullfile(macro_path,[ident,'-MacroSegmentation.ijm'])));
+%     if toc>90
+%         disp(['done' num2str(toc)])
+%         break 
+%     end
+% end
+
+% masknam = strrep(Files1(end).name,'png','tif');
+% tempmask = imread([pDIC,'\Segmentation\', masknam]);
+% if ~exist([pDIC,'\Segmentation\', masknam])
+%     % Run CellStar
+% end
+% if length(unique(tempmask))>2
+%     % Run CellStar
+% end
+
+
 IJ=ij.IJ();
 macro_path = [pDIC,'\Segmentation'];
 IJ.runMacroFile(java.lang.String(fullfile(macro_path,[ident,'-MacroSegmentation.ijm'])));
