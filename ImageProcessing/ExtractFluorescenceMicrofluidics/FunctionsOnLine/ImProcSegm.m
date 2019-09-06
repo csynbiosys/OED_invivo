@@ -18,7 +18,7 @@
 % --------> 
 
 
-function [] = ImProcSegm(obj, event, cutcor, pDIC, ident, INP)
+function [] = ImProcSegm(obj, event, cutcor, pDIC, ident, INP, CitFreq, DicFreq, datenow)
 
 %% Generate necessary directories if they do not exist
 if ~exist([pDIC,'\Segmentation'],'dir')
@@ -84,6 +84,12 @@ end
 
 % Run UNet segmentation Macro code
 
+
+IJ=ij.IJ();
+macro_path = [pDIC,'\Segmentation'];
+IJ.runMacroFile(java.lang.String(fullfile(macro_path,[ident,'-MacroSegmentation.ijm'])));
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%% Exceptions to check if UNet has worked and if
 %%%%%%%%%%%%%%%%%%%%%%%%%% not run Cell Star
 % tic
@@ -97,19 +103,15 @@ end
 %     end
 % end
 
-% masknam = strrep(Files1(end).name,'png','tif');
-% tempmask = imread([pDIC,'\Segmentation\', masknam]);
+masknam = strrep(Files1(end).name,'png','tif');
+tempmask = imread([pDIC,'\Segmentation\', masknam]);
 % if ~exist([pDIC,'\Segmentation\', masknam])
 %     % Run CellStar
 % end
-% if length(unique(tempmask))>2
-%     % Run CellStar
-% end
+if length(unique(tempmask))>3
+    delete([pDIC,'\Segmentation\', masknam])
+end
 
-
-IJ=ij.IJ();
-macro_path = [pDIC,'\Segmentation'];
-IJ.runMacroFile(java.lang.String(fullfile(macro_path,[ident,'-MacroSegmentation.ijm'])));
 
 %% Generate Background masks
 % Get names of current images 
@@ -138,6 +140,20 @@ for i=1:maxidM % Cut DIC images
         imwrite(z, [pDIC,'\Segmentation\BKG-',Files4(i).name])
     end
 end
+%%
+load([pDIC,'\Segmentation\TemporarySulforodamine.mat'],'tSulf');
+r = 1:CitFreq/DicFreq:maxidD;
+for i=1:maxidS % Cut DIC images
+    if isnan(tSulf(1,i))
+        num = num2str(r(i),'%.3u');
+        sul = imread([pDIC,'\CutSulf\exp_000',num,'_Sulforhodamine_001.png']);
+        sul21 = imread([pDIC,'\Segmentation\BKG-exp_000',num,'_DIC_001.tif']);
+        tSulf(i)=median(sul(logical(sul21)));
+    end
+
+end
+
+save([pDIC,'\Segmentation\TemporarySulforodamine.mat'],'tSulf');
 
 %% Indexing masks
 % Get names of current images 
@@ -175,7 +191,16 @@ for i=1:maxidM
         fprintf(fil, 'import numpy as np');
         fprintf(fil, '\n \n');
 
-        dir1 = strrep([pDIC,'\Segmentation'],'\2','\\2');
+        dir1 = strrep([pDIC,'\Segmentation'],'\1','\\1');
+        dir1 = strrep([dir1],'\2','\\2');
+        dir1 = strrep([dir1],'\3','\\3');
+        dir1 = strrep([dir1],'\4','\\4');
+        dir1 = strrep([dir1],'\5','\\5');
+        dir1 = strrep([dir1],'\6','\\6');
+        dir1 = strrep([dir1],'\7','\\7');
+        dir1 = strrep([dir1],'\8','\\8');
+        dir1 = strrep([dir1],'\9','\\9');
+        dir1 = strrep([dir1],'\0','\\0');
         dir1 = strrep(dir1,'\','\\');
         fprintf(fil, ['im = sio.loadmat(''',dir1,'\\Components\\Segment',num2str(i), '.mat'')']);
 
@@ -205,13 +230,13 @@ load([pDIC,'\Segmentation\TemporaryBackground.mat'],'tBKGround');
 load([pDIC,'\Segmentation\TemporaryBackgroundShort.mat'],'tBKGroundS');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
-if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
-    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
-else
-    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
-end
+% if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
+%     r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
+% else
+%     r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
+% end
 
-% r = 2:2:maxidD;
+r = 1:CitFreq/DicFreq:maxidD;
 for i=1:maxidC % Cut DIC images
     if isnan(tfluo(1,i))
         num = num2str(r(i),'%.3u');
@@ -265,20 +290,114 @@ save([pDIC,'\Segmentation\TemporaryBackgroundShort.mat'],'tBKGroundS');
 
 %% Plot results
 
-time = 0:5:(length(tfluo)-1)*5;
-% figure;
+for han=1:4
+    if ishandle(han)
+        close(han);
+    end
+end
+
+time = 0:CitFreq:(length(tfluo)-1)*CitFreq;
+figure;
 hold on
 yyaxis left
 errorbar(time, tfluo(1,:), tfluo(2,:), 'g'); % Fluorescence Levels
-title('Temporary Fluorescence')
+set(gca,'ycolor','g')
+title('Temporary Citrine Fluorescence')
 xlabel('time(min)')
 ylabel('Citrine(A.U.)')
 
 yyaxis right
 stairs(INP(2,:), INP(1,:), 'b') % Input design
-ylabel('IPTG(uM)')
-
+set(gca,'ycolor','b')
+ylabel('IPTG(\muM)')
 hold off
+
+try
+    saveas(gcf,['C:\Users\s1778490\Dropbox\OEDinVivoMicrofluidicExperiments\',datenow,'_Microfluidics\',ident,'-Citrine.png']);
+catch
+    warning('Problem Saving Citrine Image');
+end
+
+
+figure;
+hold on
+yyaxis left
+plot(time,tSulf, 'r')
+set(gca,'ycolor','r')
+saveas(gcf,'Test.png')
+title('Temporary Sulforhodamine Fluorescence')
+xlabel('time(min)')
+ylabel('Sulforhodamine(A.U.)')
+xlim([0,(length(tfluo)-1)*5])
+
+yyaxis right
+stairs(INP(2,:), INP(1,:), 'b') % Input design
+set(gca,'ycolor','b')
+ylabel('IPTG(\muM)')
+hold off
+
+try
+    saveas(gcf, ['C:\Users\s1778490\Dropbox\OEDinVivoMicrofluidicExperiments\',datenow,'_Microfluidics\',ident,'-Sulforodamine.png']);
+catch
+    warning('Problem Saving Sulforodamine Image');
+end
+
+try
+    d = imread([Files1(end).folder, '\', Files1(end).name]);
+    c = imread([Files2(end).folder, '\', Files2(end).name]);
+    m = imread([Files1(end).folder, '\Segmentation\', strrep(Files1(end).name,'png','tif')]);
+    s = imread([Files3(end).folder, '\', Files3(end).name]);
+    
+    if cutcor(4)-cutcor(3)>cutcor(2)-cutcor(1)
+        figure
+        hold on
+        subplot(2,1,1)
+        imshow(mat2gray(d(cutcor(1):cutcor(2),cutcor(3):cutcor(4))))
+        title('DIC')
+        subplot(2,1,2)
+        imshow(mat2gray(m))
+        title('Mask')
+        hold off
+        saveas(gcf, ['C:\Users\s1778490\Dropbox\OEDinVivoMicrofluidicExperiments\',datenow,'_Microfluidics\',ident,'-LastTP1.png']);
+        
+        figure
+        hold on
+        subplot(2,1,1)
+        imshow(mat2gray(c(cutcor(1):cutcor(2),cutcor(3):cutcor(4))))
+        title('Citrine')
+        subplot(2,1,2)
+        imshow(mat2gray(s(cutcor(1):cutcor(2),cutcor(3):cutcor(4))))
+        title('Sulforhodamine')
+        hold off
+        saveas(gcf, ['C:\Users\s1778490\Dropbox\OEDinVivoMicrofluidicExperiments\',datenow,'_Microfluidics\',ident,'-LastTP2.png']);
+        
+    else
+        figure
+        hold on
+        subplot(1,2,1)
+        imshow(mat2gray(d(cutcor(1):cutcor(2),cutcor(3):cutcor(4))))
+        title('DIC')
+        subplot(1,2,2)
+        imshow(mat2gray(m))
+        title('Mask')
+        hold off
+        saveas(gcf, ['C:\Users\s1778490\Dropbox\OEDinVivoMicrofluidicExperiments\',datenow,'_Microfluidics\',ident,'-LastTP1.png']);
+        
+        figure
+        hold on
+        subplot(1,2,1)
+        imshow(mat2gray(c(cutcor(1):cutcor(2),cutcor(3):cutcor(4))))
+        title('Citrine')
+        subplot(1,2,2)
+        imshow(mat2gray(s(cutcor(1):cutcor(2),cutcor(3):cutcor(4))))
+        title('Sulforhodamine')
+        hold off
+        saveas(gcf, ['C:\Users\s1778490\Dropbox\OEDinVivoMicrofluidicExperiments\',datenow,'_Microfluidics\',ident,'-LastTP2.png']);
+    end
+    
+catch
+    warning('Problem Ploting current time-frame');
+end
 
 
 end

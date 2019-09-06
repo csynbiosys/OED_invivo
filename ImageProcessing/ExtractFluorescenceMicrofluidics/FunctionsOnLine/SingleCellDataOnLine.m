@@ -15,7 +15,7 @@
 % --------> scts: Matlab structure containing the single cell sizes by
 % frame
 
-function [sct,sct2,scts] = SingleCellDataOnLine(pDIC, ident)
+function [sct,sct2,scts] = SingleCellDataOnLine(pDIC,ident,CitFreq,DicFreq)
 
 % Get Directory of images 
 Folder=[pDIC,'\CutDIC\'];
@@ -75,16 +75,9 @@ medianBGCitrine=tBKGround;
 % Singel Cell Data per frame
 sct = cell(1,maxidC);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
-
-if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
-    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
-else
-    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
-end
-
-% r=2:2:maxid;
-parfor ind=1:maxidC
+r = 1:CitFreq/DicFreq:maxidD;
+id = 1;
+for ind=1:maxidC
     strind=num2str(ind,'%.3u');
     fprintf(['Processing frame ',strind,'...\n']);
     tempim2=double(CCs{ind});
@@ -103,15 +96,15 @@ parfor ind=1:maxidC
             end
         end
     end
-    id = 1;
-    if (np/(a*b)) > 0.50
+    
+    if (np/(a*b)) > 0.60
         for p=1:length(temp1)
             sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind)), std((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind))];
         end
         id = id+1;
     else
         for p=1:length(temp1)
-            sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(1:id))), std((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(1:id)))];
+            sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(37:id))), std((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(37:id)))];
         end
     end
     
@@ -152,6 +145,7 @@ save([pDIC, '\Tracking\',ident,'_SingleCellTrackSize.mat'], 'scts')
 
 
 end
+
 
 
 

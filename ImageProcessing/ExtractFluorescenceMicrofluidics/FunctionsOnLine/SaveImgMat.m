@@ -1,4 +1,3 @@
-
 %% Save Images in Matlab Structures
 
 % 
@@ -17,40 +16,44 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OUTPUTS
 % --------> 
 
-function [CDs, CCs, Segs, BGMask] = SaveImgMat(pDIC,ident)
+function [CDs, CCs, Segs, BGMask] = SaveImgMat(pDIC,ident,CitFreq,DicFreq)
 
 %% Cut Images
 
 filePattern1 = fullfile([pDIC,'\CutDIC'], 'exp*DIC_001.png');
 filePattern2 = fullfile([pDIC,'\CutCitrine'], 'exp*mCitrineTeal_001.png');
+filePattern3 = fullfile([pDIC,'\CutSulf'], 'exp*Sulforhodamine_001.png');
 Files1 = dir(filePattern1);
 Files2 = dir(filePattern2);
+Files3 = dir(filePattern3);
 % Get number of frames for channel
 maxidD=length(Files1);
 maxidC=length(Files2);
+maxidS=length(Files3);
 
 CDs=cell(1,maxidD);
 CCs=cell(1,maxidC);
+CSs=cell(1,maxidS);
 
 parfor i=1:maxidD % DIC images
     num = num2str(i,'%.3u');
     CDs{i} = imread([pDIC,'\CutDIC\exp_000',num,'_DIC_001.png']);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
-if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
-    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
-else
-    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
-end
-
-% r = 2:2:maxidD;
+r = 1:CitFreq/DicFreq:maxidD;
 parfor i=1:maxidC % Citrine Images
     num = num2str(r(i),'%.3u');
     CCs{i} = imread([pDIC,'\CutCitrine\exp_000',num,'_mCitrineTeal_001.png']);
 end
 
-save([pDIC, '\',ident,'-CutImages.mat'], 'CDs', 'CCs')
+r = 1:CitFreq/DicFreq:maxidD;
+parfor i=1:maxidC % Citrine Images
+    num = num2str(r(i),'%.3u');
+    CSs{i} = imread([pDIC,'\CutSulf\exp_000',num,'_Sulforhodamine_001.png']);
+end
+
+save([pDIC, '\',ident,'-CutImages.mat'], 'CDs', 'CCs', 'CSs')
+
 
 %% Masks
 filePattern3 = fullfile([pDIC,'\Segmentation'], 'exp*DIC_001.tif');
@@ -82,6 +85,8 @@ save([pDIC,'\',ident,'_BackGroundMask.mat'], 'BGMask')
 
 
 end
+
+
 
 
 

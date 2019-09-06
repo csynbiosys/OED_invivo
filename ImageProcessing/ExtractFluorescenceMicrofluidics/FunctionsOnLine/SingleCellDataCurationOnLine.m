@@ -14,13 +14,7 @@
 % --------> sct6: Matlab structure containing the single cell citrine levels
 % by cell after the correcton of the traces
 
-function [dat,sct6,sct62] = SingleCellDataCurationOnLine(pDIC, ident)
-
-Folder=[pDIC, '\CutDIC\'];
-filePattern = fullfile(Folder,'exp_000*_DIC_001.png');
-Files = dir(filePattern);
-% Get number of frames for channel
-maxid=length(Files);
+function [dat,sct6,sct62] = SingleCellDataCurationOnLine(pDIC, ident, CitFreq, DicFreq)
 
 filePattern1 = fullfile(pDIC, 'exp*DIC_001.png');
 filePattern2 = fullfile(pDIC, 'exp*mCitrineTeal_001.png');
@@ -39,7 +33,7 @@ n=cellfun(@(seg) max(seg(:)),trki);
 nf = maxidC;
 dat = zeros(maxidC,2);
 
-for i=1:maxiC
+for i=1:maxidC
     dat(i,1)=mean(sct{i}(1,:), 'omitnan');
     dat(i,2)=std(sct{i}(1,:), 'omitnan');
 end
@@ -104,15 +98,8 @@ edgeind = [];
 
 sctEDGE = cell(1,maxidC);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TO CHECK FOR WORK
 
-if str2double(Files1(1).name(5:10)) == str2double(Files2(1).name(5:10))
-    r=str2double(Files1(1).name(5:10)):str2double(Files1(1).name(5:10)):maxidD;
-else
-    r=str2double(Files2(1).name(5:10)):str2double(Files2(1).name(5:10)):maxidD;
-end
-
-% r=2:2:maxid;
+r = 1:CitFreq/DicFreq:maxidD;
 parfor ind=1:maxidC
     tempim2=double(CCs{ind});
     disp(num2str(ind))
@@ -236,8 +223,6 @@ sct62 = sct6(~cellfun('isempty',sct6));
 save([pDIC, '\Tracking\',ident,'_FinalCuratedTracesNoEmpty.mat'], 'sct62');
 
 end
-
-
 
 
 

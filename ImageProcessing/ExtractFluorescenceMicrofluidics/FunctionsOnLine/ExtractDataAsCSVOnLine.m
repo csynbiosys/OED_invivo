@@ -12,7 +12,7 @@
 function [] = ExtractDataAsCSVOnLine(direct, ident)
 
 % Load data
-load([pDIC, '\Tracking\',ident,'_FinalCuratedTracesNoEmpty.mat'], 'sct62');
+load([direct, '\Tracking\',ident,'_FinalCuratedTracesNoEmpty.mat'], 'sct62');
 
 %% Single-cell data
 
@@ -101,14 +101,14 @@ header2(1) = 'IPTGpre';
 header2(2) = 'IPTG';
 header2(3) = 'time(min)';
 header2(4) = 'Mean';
-header2(5) = 'Standard Deviation';
+header2(5) = 'StandardDeviation';
 
 % Write CSV file
 cHeader2 = num2cell(header2); %dummy header
 for i=1:length(cHeader2)
 cHeader2{i} = char(cHeader2{i});
 end
-textHeader = strjoin(cHeader, ',');
+textHeader = strjoin(cHeader2, ',');
 %write header to file
 fid = fopen([direct,'\',ident,'-Average_Data.csv'],'w'); 
 fprintf(fid,'%s\n',textHeader);
