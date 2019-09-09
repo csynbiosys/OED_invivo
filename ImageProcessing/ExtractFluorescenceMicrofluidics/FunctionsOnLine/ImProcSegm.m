@@ -55,6 +55,7 @@ maxidD=length(Files1);
 maxidC=length(Files2);
 maxidS=length(Files3);
 
+try
 % Check if frame has been already cut and if not, cut image and save it
 for i=1:maxidD % Cut DIC images
     if ~isfile([pDIC,'\CutDIC\',Files1(i).name])
@@ -398,7 +399,16 @@ try
 catch
     warning('Problem Ploting current time-frame');
 end
-
+    
+    
+catch err
+    %open file
+    errorFile = ['Error-',erase(Files1(end).name,'.png'),'.errorLog'];
+    fid = fopen(errorFile,'a+');
+    fprintf(fid, '%s', err.getReport('extended', 'hyperlinks','off'));
+    % close file
+    fclose(fid);
+end
 
 end
 
