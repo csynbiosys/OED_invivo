@@ -165,6 +165,8 @@ start(t)
 wait(t)
 stop(t)
 
+ExtractDataAsCSVOnLineTemp(direct, INP, CitFreq, ident);
+
 % disp('Experiment Finished!')
 
 disp('                         ************************************************');
