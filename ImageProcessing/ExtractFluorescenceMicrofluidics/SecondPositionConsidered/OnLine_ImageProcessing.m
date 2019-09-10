@@ -120,6 +120,15 @@ save([pDIC,'\Segmentation\TemporaryBackgroundShort.mat'],'tBKGroundS');
 tSulf = nan(1,(maxt/2)/(DicFreq*60));
 save([pDIC,'\Segmentation\TemporarySulforodamine.mat'],'tSulf');
 
+if ~isempty(cutcorBACK1)
+    cBacka = nan(1,(maxt/2)/(DicFreq*60));
+    save([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');
+end
+if ~isempty(cutcorBACK2)
+    cBackb = nan(1,(maxt/2)/(DicFreq*60));
+    save([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
+end
+
 CitFreq = DicFreq*exps.chans{2,3};
 datenow = date;
 

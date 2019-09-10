@@ -253,15 +253,42 @@ load([pDIC,'\Segmentation\TemporarySulforodamine.mat'],'tSulf');
 r = 1:CitFreq/DicFreq:maxidD;
 
 if ~isempty(cutcorBACK1)
+    load([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');    
     for i=1:maxidS % Cut DIC images
         if isnan(tSulf(1,i))
             num = num2str(r(i),'%.3u');
             sul = imread([bacpat,'\CutSulfBackOne\exp_000',num,'_Sulforhodamine_001.png']);
             sul21 = imread([bacpat,'\SegmentationOne\exp_000',num,'_DIC_001.tif']);    
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Patch for segmentation issues when there is no cells
+            L = bwlabel(sul21,4);
+            cBacka(i)=length(unique(L));
+            if i<360/CitFreq && cBacka(i)>100
+                sul21=sul21*0;
+            elseif i>=360/CitFreq && isempty(find((cBacka<100)==1))
+                sul21=sul21*0;
+            end
+            save([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             sulvec = double(sul(sul21==0));
             if ~isempty(cutcorBACK2)
+                load([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
+                
                 sulb = imread([bacpat,'\CutSulfBackTwo\exp_000',num,'_Sulforhodamine_001.png']);
                 sul21b = imread([bacpat,'\SegmentationTwo\exp_000',num,'_DIC_001.tif']);    
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Patch for segmentation issues when there is no cells
+                L = bwlabel(sul21b,4);
+                cBackb(i)=length(unique(L));
+                if i<360/CitFreq && cBackb(i)>100
+                    sul21b=sul21b*0;
+                elseif i>=360/CitFreq && isempty(find((cBackb<100)==1))
+                    sul21b=sul21b*0;
+                end
+                save([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
                 sulvecb = double(sulb(sul21b==0));
                 sulvec=[sulvec;sulvecb];
             end
@@ -400,12 +427,34 @@ else
 %             Background
             tSegsBACK=imread([bacpat,'\SegmentationOne\',Files4(r(i)).name]); % Background image
             tCitrBACK=double(imread([bacpat,'\CutCitrineBackOne\exp_000',num,'_mCitrineTeal_001.png'])); % Cut citrine image
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Patch for segmentation issues when there is no cells
+            firdrop = find((cBacka<100)==1);
+            if i<360/CitFreq && cBacka(i)>100
+                tSegsBACK=tSegsBACK*0;
+            elseif i>=360/CitFreq && firdrop(1)>=i
+                tSegsBACK=tSegsBACK*0;
+            end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
             % Compute Background intensity
             ALLround=(tCitrBACK(tSegsBACK==0)); % Compute Background
             if ~isempty(cutcorBACK2)
                 tSegsBACK2=imread([bacpat,'\SegmentationTwo\',Files4(r(i)).name]); % Background image
                 tCitrBACK2=double(imread([bacpat,'\CutCitrineBackTwo\exp_000',num,'_mCitrineTeal_001.png'])); % Cut citrine image
                 % Compute Background intensity
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Patch for segmentation issues when there is no cells
+                firdropb = find((cBackb<100)==1);
+                if i<360/CitFreq && cBackb(i)>100
+                    tSegsBACK2=tSegsBACK2*0;
+                elseif i>=360/CitFreq && firdropb(1)>=i
+                    tSegsBACK2=tSegsBACK2*0;
+                end
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
                 ALLround2=(tCitrBACK2(tSegsBACK2==0)); % Compute Background
             end
             
