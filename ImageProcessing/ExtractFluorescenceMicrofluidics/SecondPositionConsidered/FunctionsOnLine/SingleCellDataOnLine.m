@@ -64,7 +64,7 @@ for ind=1:maxidC
     temp1 = nonzeros(temp1);
     sct{ind} = NaN(2,max(n));
     
-    if ~isnan(tBKGroundS(i))
+    if ~isnan(tBKGroundS(ind))
         for p=1:length(temp1)
             sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind)), std((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind))];
         end
