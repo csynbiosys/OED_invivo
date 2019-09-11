@@ -286,7 +286,7 @@ if ~isempty(cutcorBACK1)
                 elseif i>=360/CitFreq && isempty(find((cBackb<100)==1))
                     sul21b=sul21b*0;
                 end
-                save([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');
+                save([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 sulvecb = double(sulb(sul21b==0));
