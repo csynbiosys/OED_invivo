@@ -254,6 +254,9 @@ r = 1:CitFreq/DicFreq:maxidD;
 
 if ~isempty(cutcorBACK1)
     load([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');    
+    if ~isempty(cutcorBACK2)
+        load([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
+    end
     for i=1:maxidS % Cut DIC images
         if isnan(tSulf(1,i))
             num = num2str(r(i),'%.3u');
@@ -272,7 +275,7 @@ if ~isempty(cutcorBACK1)
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             sulvec = double(sul(sul21==0));
             if ~isempty(cutcorBACK2)
-                load([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
+                
                 
                 sulb = imread([bacpat,'\CutSulfBackTwo\exp_000',num,'_Sulforhodamine_001.png']);
                 sul21b = imread([bacpat,'\SegmentationTwo\exp_000',num,'_DIC_001.tif']);    
@@ -286,13 +289,16 @@ if ~isempty(cutcorBACK1)
                 elseif i>=360/CitFreq && isempty(find((cBackb<100)==1))
                     sul21b=sul21b*0;
                 end
-                save([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
+                
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 sulvecb = double(sulb(sul21b==0));
                 sulvec=[sulvec;sulvecb];
             end
             tSulf(i)=median(sulvec);
+            if ~isempty(cutcorBACK2)
+                save([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
+            end
         end
     end
 else
@@ -431,6 +437,9 @@ else
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Patch for segmentation issues when there is no cells
             firdrop = find((cBacka<100)==1);
+            if isempty(firdrop)
+                firdrop=inf;
+            end
             if i<360/CitFreq && cBacka(i)>100
                 tSegsBACK=tSegsBACK*0;
             elseif i>=360/CitFreq && firdrop(1)>=i
@@ -448,6 +457,9 @@ else
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Patch for segmentation issues when there is no cells
                 firdropb = find((cBackb<100)==1);
+                if isempty(firdropb)
+                    firdropb=inf;
+                end
                 if i<360/CitFreq && cBackb(i)>100
                     tSegsBACK2=tSegsBACK2*0;
                 elseif i>=360/CitFreq && firdropb(1)>=i
@@ -528,21 +540,37 @@ else
             end
             
             
+            tBKG=imread([pDIC,'\Segmentation\BKG-',Files4(r(i)).name]); % Background image
+            load([pDIC,'\Segmentation\TemporaryBackgroundROI1.mat'],'tBKGroundROI1');
+            % Compute Background intensity
+            tBKGroundROI1(i)=mean(tCitr(logical(tBKG))); % Compute Background
+            save([pDIC,'\Segmentation\TemporaryBackgroundROI1.mat'],'tBKGroundROI1');
+            [a1,b1] = size(tSegs); % Compute percentage of pixels from background
+            np1 = length(tCitr(logical(tBKG)==1));
             % Extract cell fluorescence
-            if ~isnan(tBKGroundS(i))
+            if np1/(a1*b1)>0.75
                 me1 = nan(1,length(unique(tSegs))-1); % Store mean fluorescence values per cell
                 for j=1:(length(unique(tSegs))-1)
-                    me1(j)=mean(tCitr(tSegs==j)-tBKGround(i),'omitnan');
+                    me1(j)=mean(tCitr(tSegs==j)-tBKGroundROI1(i),'omitnan');
                 end
                 tfluo(1,i)=mean(me1,'omitnan'); % Mean and standard deviation fluorescence value of the image
                 tfluo(2,i)=std(me1,'omitnan');
-            elseif isnan(tBKGroundS(i))
-                me1 = nan(1,length(unique(tSegs))-1);
-                for j=1:(length(unique(tSegs))-1)
-                    me1(j)=mean(tCitr(tSegs==j)-mean(tBKGroundS(1:end),'omitnan'),'omitnan');
+            else
+                if ~isnan(tBKGroundS(i))
+                    me1 = nan(1,length(unique(tSegs))-1); % Store mean fluorescence values per cell
+                    for j=1:(length(unique(tSegs))-1)
+                        me1(j)=mean(tCitr(tSegs==j)-tBKGround(i),'omitnan');
+                    end
+                    tfluo(1,i)=mean(me1,'omitnan'); % Mean and standard deviation fluorescence value of the image
+                    tfluo(2,i)=std(me1,'omitnan');
+                elseif isnan(tBKGroundS(i))
+                    me1 = nan(1,length(unique(tSegs))-1);
+                    for j=1:(length(unique(tSegs))-1)
+                        me1(j)=mean(tCitr(tSegs==j)-mean(tBKGroundS(1:end),'omitnan'),'omitnan');
+                    end
+                    tfluo(1,i)=mean(me1,'omitnan');
+                    tfluo(2,i)=std(me1,'omitnan');
                 end
-                tfluo(1,i)=mean(me1,'omitnan');
-                tfluo(2,i)=std(me1,'omitnan');
             end
 
         end

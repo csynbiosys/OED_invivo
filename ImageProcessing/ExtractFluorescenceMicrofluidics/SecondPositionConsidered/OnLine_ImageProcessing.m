@@ -117,6 +117,8 @@ tBKGround = nan(1,(maxt/2)/(DicFreq*60));
 save([pDIC,'\Segmentation\TemporaryBackground.mat'],'tBKGround');
 tBKGroundS = nan(1,(maxt/2)/(DicFreq*60));
 save([pDIC,'\Segmentation\TemporaryBackgroundShort.mat'],'tBKGroundS');
+tBKGroundROI1 = nan(1,(maxt/2)/(DicFreq*60));
+save([pDIC,'\Segmentation\TemporaryBackgroundROI1.mat'],'tBKGroundROI1');
 tSulf = nan(1,(maxt/2)/(DicFreq*60));
 save([pDIC,'\Segmentation\TemporarySulforodamine.mat'],'tSulf');
 
