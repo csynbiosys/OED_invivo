@@ -92,7 +92,6 @@ maxidD=length(Files1);
 maxidC=length(Files2);
 maxidS=length(Files3);
 
-try
 % Check if frame has been already cut and if not, cut image and save it
 for i=1:maxidD % Cut DIC images
     if ~isfile([pDIC,'\CutDIC\',Files1(i).name])
@@ -187,10 +186,11 @@ IJ.runMacroFile(java.lang.String(fullfile(macro_path,[ident,'-MacroSegmentation.
 if ~isempty(cutcorBACK1)
     macro_pathb1 = [bacpat,'\SegmentationOne'];
     IJ.runMacroFile(java.lang.String(fullfile(macro_pathb1,[ident,'-MacroSegmentationBackOne.ijm'])));
-    if ~isempty(cutcorBACK2)
-        macro_pathb2 = [bacpat,'\SegmentationTwo'];
-        IJ.runMacroFile(java.lang.String(fullfile(macro_pathb2,[ident,'-MacroSegmentationBackTwo.ijm'])));
-    end
+end
+
+if ~isempty(cutcorBACK2)
+    macro_pathb2 = [bacpat,'\SegmentationTwo'];
+    IJ.runMacroFile(java.lang.String(fullfile(macro_pathb2,[ident,'-MacroSegmentationBackTwo.ijm'])));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%% Exceptions to check if UNet has worked 
 %%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -250,13 +250,11 @@ end
 
 %% Compute background sulforhodamine levels
 load([pDIC,'\Segmentation\TemporarySulforodamine.mat'],'tSulf');
+
 r = 1:CitFreq/DicFreq:maxidD;
 
 if ~isempty(cutcorBACK1)
-    load([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');    
-    if ~isempty(cutcorBACK2)
-        load([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
-    end
+    load([bacpat,'\SegmentationOne\TemporaryCellCount.mat'],'cBacka');
     for i=1:maxidS % Cut DIC images
         if isnan(tSulf(1,i))
             num = num2str(r(i),'%.3u');
@@ -275,10 +273,10 @@ if ~isempty(cutcorBACK1)
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             sulvec = double(sul(sul21==0));
             if ~isempty(cutcorBACK2)
-                
+                load([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
                 
                 sulb = imread([bacpat,'\CutSulfBackTwo\exp_000',num,'_Sulforhodamine_001.png']);
-                sul21b = imread([bacpat,'\SegmentationTwo\exp_000',num,'_DIC_001.tif']);    
+                sul21b = imread([bacpat,'\SegmentationTwo\exp_000',num,'_DIC_001.tif']);  
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Patch for segmentation issues when there is no cells
@@ -289,16 +287,13 @@ if ~isempty(cutcorBACK1)
                 elseif i>=360/CitFreq && isempty(find((cBackb<100)==1))
                     sul21b=sul21b*0;
                 end
-                
+                save([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 sulvecb = double(sulb(sul21b==0));
                 sulvec=[sulvec;sulvecb];
             end
             tSulf(i)=median(sulvec);
-            if ~isempty(cutcorBACK2)
-                save([bacpat,'\SegmentationTwo\TemporaryCellCount.mat'],'cBackb');
-            end
         end
     end
 else
@@ -437,9 +432,6 @@ else
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Patch for segmentation issues when there is no cells
             firdrop = find((cBacka<100)==1);
-            if isempty(firdrop)
-                firdrop=inf;
-            end
             if i<360/CitFreq && cBacka(i)>100
                 tSegsBACK=tSegsBACK*0;
             elseif i>=360/CitFreq && firdrop(1)>=i
@@ -457,9 +449,6 @@ else
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Patch for segmentation issues when there is no cells
                 firdropb = find((cBackb<100)==1);
-                if isempty(firdropb)
-                    firdropb=inf;
-                end
                 if i<360/CitFreq && cBackb(i)>100
                     tSegsBACK2=tSegsBACK2*0;
                 elseif i>=360/CitFreq && firdropb(1)>=i
@@ -538,7 +527,6 @@ else
             elseif ~isempty(cutcorBACK2) && (np2/(a2*b2))<0.40 && (np/(a*b))<0.40
                 tBKGround(i)=mean([ALLround; ALLround2]);
             end
-            
             
             tBKG=imread([pDIC,'\Segmentation\BKG-',Files4(r(i)).name]); % Background image
             load([pDIC,'\Segmentation\TemporaryBackgroundROI1.mat'],'tBKGroundROI1');
@@ -694,15 +682,6 @@ catch
 end
 
 
- 
-catch err
-    %open file
-    errorFile = ['Error-',erase(Files1(end).name,'.png'),'.errorLog'];
-    fid = fopen(errorFile,'a+');
-    fprintf(fid, '%s', err.getReport('extended', 'hyperlinks','off'));
-    % close file
-    fclose(fid);
-end
 end
 
 

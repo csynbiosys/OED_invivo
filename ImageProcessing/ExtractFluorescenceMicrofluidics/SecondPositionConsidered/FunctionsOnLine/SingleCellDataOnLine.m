@@ -33,14 +33,16 @@ maxidD=length(Files1);
 maxidC=length(Files2);
 
 % Load tracking results
-trki = cell(1,maxidD);
-for i=1:maxidD
-    strind=num2str(i,'%.3u');
-    x = imread([pDIC, '\Tracking\trk-img_',strind,'.tif']);
-    trki{i}=x;
-end
+% trki = cell(1,maxidD);
+% for i=1:maxidD
+%     strind=num2str(i,'%.3u');
+%     x = imread([pDIC, '\Tracking\trk-img_',strind,'.tif']);
+%     trki{i}=x;
+% end
+% 
+% save([pDIC, '\Tracking\',ident,'_TrakedMasks2.mat'], 'trki')
 
-save([pDIC, '\Tracking\',ident,'_TrakedMasks2.mat'], 'trki')
+load([pDIC, '\Tracking\',ident2,'_TrakedMasksCorrected.mat'], 'trki') % Load results
 
 % Number of cells
 n=cellfun(@(seg) max(seg(:)),trki);
@@ -54,9 +56,15 @@ medianBGCitrine=tBKGroundS;
 % Singel Cell Data per frame
 sct = cell(1,maxidC);
 
+
+load([pDIC,'\Segmentation\TemporaryBackgroundROI1.mat'],'tBKGroundROI1');
+
+
+
 r = 1:CitFreq/DicFreq:maxidD;
 for ind=1:maxidC
     strind=num2str(ind,'%.3u');
+    num=num2str(r(ind),'%.3u');
     fprintf(['Processing frame ',strind,'...\n']);
     tempim2=double(CCs{ind});
     
@@ -64,13 +72,24 @@ for ind=1:maxidC
     temp1 = nonzeros(temp1);
     sct{ind} = NaN(2,max(n));
     
-    if ~isnan(tBKGroundS(ind))
+    tCitr=double(imread([pDIC,'\CutCitrine\exp_000',num,'_mCitrineTeal_001.png'])); % Cut citrine image
+    tBKG=double(imread([pDIC,'\Segmentation\BKG-exp_000',num,'_DIC_001.tif'])); % Cut citrine image
+    [a1,b1] = size(tBKG); % Compute percentage of pixels from background
+    np1 = length(tCitr(logical(tBKG)==1));
+    % Extract cell fluorescence
+    if np1/(a1*b1)>0.75
         for p=1:length(temp1)
-            sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind)), std((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind))];
+            sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-tBKGroundROI1(ind)), std((tempim2(trki{r(ind)}==temp1(p)))-tBKGroundROI1(ind))];
         end
     else
-        for p=1:length(temp1)
-            sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(37:end),'omitnan')), std((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(37:end),'omitnan'))];
+        if ~isnan(tBKGroundS(ind))
+            for p=1:length(temp1)
+                sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind)), std((tempim2(trki{r(ind)}==temp1(p)))-medianBGCitrine(ind))];
+            end
+        else
+            for p=1:length(temp1)
+                sct{ind}(:,temp1(p)) = [mean((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(37:end),'omitnan')), std((tempim2(trki{r(ind)}==temp1(p)))-mean(medianBGCitrine(37:end),'omitnan'))];
+            end
         end
     end
     
