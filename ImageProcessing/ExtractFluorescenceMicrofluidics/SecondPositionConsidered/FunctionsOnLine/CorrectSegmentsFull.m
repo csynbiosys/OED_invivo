@@ -15,6 +15,19 @@ function [x,y]=CorrectSegmentsFull(x)
 
     [i,j]=size(x);
     y = zeros(i,j);
+    s = zeros(i,j); % Matrix that will contain small cells (less than 175 pixels)
+    
+    % Do not consider small\normal size cells into the procedure (150-200 pixels)
+    L = bwlabel(x,4); % Index original mask
+    nuce = unique(L); % Get the number of elements
+    nuce = nuce(2:end); % Discard the 0 (background)
+    for k=1:length(nuce) % Iterate over the number of cells in the frame
+        pc = find(L==nuce(k)); % Find matrix indexes for each cell
+        if length(pc)<=175 % If the cell is small, put them on s and delete them from x. The cells will be added again at the end of the script. 
+            s(pc)=1;
+            x(pc)=0;
+        end
+    end
     
     % Add pixel if there is a cell with one missing pixel
     % 111 
@@ -108,29 +121,29 @@ function [x,y]=CorrectSegmentsFull(x)
     end
     
    
-%     % Remove outline
-%     for a=1:i
-%         for b=1:j
-%             if a+1>1 && a-1>1 && b+1>1 && b-1>1 && a+1<i && b+1<j
-%                 if x(a,b)==1 && (x(a-1,b)==0 || x(a+1,b)==0 || x(a,b-1)==0 || x(a,b+1)==0 || x(a-1,b-1)==0 || x(a-1,b+1)==0 ...
-%                         || x(a+1,b-1)==0 || x(a+1,b+1)==0)
-%                     y(a,b) = 1;
-%                 end
-%             end
-%         end
-%     end
-%     
     % Remove outline
     for a=1:i
         for b=1:j
             if a+1>1 && a-1>1 && b+1>1 && b-1>1 && a+1<i && b+1<j
-                if x(a,b)==1 && (x(a-1,b)==0 || x(a+1,b)==0 || x(a,b-1)==0 || x(a,b+1)==0)
+                if x(a,b)==1 && (x(a-1,b)==0 || x(a+1,b)==0 || x(a,b-1)==0 || x(a,b+1)==0 || x(a-1,b-1)==0 || x(a-1,b+1)==0 ...
+                        || x(a+1,b-1)==0 || x(a+1,b+1)==0)
                     y(a,b) = 1;
                 end
             end
         end
     end
     
+    % Remove outline
+%     for a=1:i
+%         for b=1:j
+%             if a+1>1 && a-1>1 && b+1>1 && b-1>1 && a+1<i && b+1<j
+%                 if x(a,b)==1 && (x(a-1,b)==0 || x(a+1,b)==0 || x(a,b-1)==0 || x(a,b+1)==0)
+%                     y(a,b) = 1;
+%                 end
+%             end
+%         end
+%     end
+%     
     % Correct if not done before
     for a=1:i
         for b=1:j
@@ -236,6 +249,10 @@ function [x,y]=CorrectSegmentsFull(x)
             end
         end
     end
+    
+    % Bring back the small cells into the image
+    smce = find(s==1); % Get the indexes of all the small sells
+    x(smce) = 1; % Set the output frame pixels for small cells to 1
     
     return
 end
